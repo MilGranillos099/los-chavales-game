@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Juego de Unir Nombres</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      text-align: center;
+      padding: 40px;
+      color: white;
+    }
+
+    h1 {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    #fallos {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      color: yellow;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      flex-wrap: wrap;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .item {
+      background-color: #ff1744;
+      padding: 10px 20px;
+      border: 2px solid #ff5252;
+      border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .item:hover {
+      background-color: #ff5252;
+    }
+
+    .dropzone {
+      background-color: #2979ff;
+      border: 2px dashed #82b1ff;
+      padding: 5px 10px;
+      min-height: 30px;
+      border-radius: 10px;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+
+    .correct {
+      background-color: #00e676 !important;
+      border: 2px solid #00c853 !important;
+    }
+
+    .wrong {
+      background-color: #d50000 !important;
+      border: 2px solid #b71c1c !important;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Juego de Unir Nombres con Palabras</h1>
+  <div id="fallos">Fallos: 0</div>
+
+  <div class="container">
+    <div class="list" id="nombres"></div>
+    <div class="list" id="palabras"></div>
+  </div>
+
+  <script>
+    const parejas = [
+      { nombre: "Marcos", palabra: "Gordo" },
+      { nombre: "Bertin", palabra: "Negro" },
+      { nombre: "Cesar", palabra: "Gymbro" },
+      { nombre: "Samu", palabra: "Excusitas" },
+      { nombre: "Saúl", palabra: "Prepu" },
+      { nombre: "Mario", palabra: "Toad" },
+      { nombre: "Mireia", palabra: "Flopper" },
+      { nombre: "Jaime", palabra: "Dumbo" },
+      { nombre: "Ainhoa", palabra: "Bollera" },
+      { nombre: "Emma", palabra: "Puta enana" },
+      { nombre: "Leyre", palabra: "Lomos" },
+      { nombre: "Nacho", palabra: "gordo bajo" }
+    ];
+
+    let fallos = 0;
+    let seleccionado = null;
+
+    const mezclarArray = array => array.sort(() => Math.random() - 0.5);
+
+    const nombresDiv = document.getElementById('nombres');
+    const palabrasDiv = document.getElementById('palabras');
+    const fallosDiv = document.getElementById('fallos');
+
+    const nombresAleatorios = mezclarArray([...parejas]);
+    const palabrasAleatorias = mezclarArray([...parejas]);
+
+    nombresAleatorios.forEach(par => {
+      const div = document.createElement('div');
+      div.classList.add('item');
+      div.textContent = par.nombre;
+      div.dataset.nombre = par.nombre;
+      div.addEventListener('click', () => seleccionarNombre(div));
+      nombresDiv.appendChild(div);
+    });
+
+    palabrasAleatorias.forEach(par => {
+      const drop = document.createElement('div');
+      drop.classList.add('dropzone');
+      drop.textContent = par.palabra;
+      drop.dataset.match = par.nombre;
+      drop.addEventListener('click', () => intentarUnir(drop));
+      palabrasDiv.appendChild(drop);
+    });
+
+    function seleccionarNombre(div) {
+      document.querySelectorAll('.item').forEach(el => el.classList.remove('seleccionado'));
+      seleccionado = div;
+      div.classList.add('seleccionado');
+    }
+
+    function intentarUnir(dropzone) {
+      if (!seleccionado) return;
+
+      const nombre = seleccionado.dataset.nombre;
+      const correcto = dropzone.dataset.match;
+
+      if (nombre === correcto) {
+        dropzone.textContent += ` ← ${nombre}`;
+        dropzone.classList.add('correct');
+        seleccionado.remove();
+        seleccionado = null;
+      } else {
+        dropzone.classList.add('wrong');
+        fallos++;
+        fallosDiv.textContent = `Fallos: ${fallos}`;
+
+        setTimeout(() => {
+          dropzone.classList.remove('wrong');
+        }, 1000);
+
+        // Mostrar dónde debía ir
+        const correctoDrop = document.querySelector(`.dropzone[data-match='${nombre}']`);
+        correctoDrop.textContent += ` ← ${nombre}`;
+        correctoDrop.classList.add('correct');
+        seleccionado.remove();
+        seleccionado = null;
+      }
+    }
+  </script>
+</body>
+</html>
